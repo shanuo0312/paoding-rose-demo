@@ -1,0 +1,65 @@
+<?xml version="1.0" encoding="utf-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+	xmlns:util="http://www.springframework.org/schema/util" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+	xmlns:context="http://www.springframework.org/schema/context" xmlns:tx="http://www.springframework.org/schema/tx"
+	xmlns:aop="http://www.springframework.org/schema/aop"
+	xsi:schemaLocation="http://www.springframework.org/schema/beans
+http://www.springframework.org/schema/beans/spring-beans-2.5.xsd
+http://www.springframework.org/schema/util http://www.springframework.org/schema/util/spring-util-2.5.xsd
+http://www.springframework.org/schema/context
+http://www.springframework.org/schema/context/spring-context-2.5.xsd
+http://www.springframework.org/schema/tx http://www.springframework.org/schema/tx/spring-tx-2.5.xsd
+http://www.springframework.org/schema/aop http://www.springframework.org/schema/aop/spring-aop-2.5.xsd"
+	default-autowire="no" default-lazy-init="true">
+
+	<context:property-placeholder location="classpath:*.properties" />
+
+
+	<!-- JadeBeanFactoryPostProcessorPostProcessor 将扫描符合规范的DAO接口，并作为spring容器的bean -->
+
+	<!-- 如果要禁用JadeBeanFactoryPostProcessorPostProcessor，请设置系统属性jade.context.spring为0 (0代表disable, 1代表enable)。 
+		也可以通过设置jade.context.spring.包名或类名单独为各个package或类做定制(也是设置disable或enable）， 
+		如果给定的类或package没有设置，则逐级使用父级的设置， jade.context.spring.com.yourcompany.dao.UserDAO 
+		的父级是 jade.context.spring.com.yourcompany.dao; jade.context.spring.com 
+		的父级是 jade.context.spring.*; jade.context.spring.* 是根，没有父级别（嗯，因此您可以将 
+		jade.context.spring.* 的设置看成整个系统的默认值) -->
+	<bean
+		class="net.paoding.rose.jade.context.spring.JadeBeanFactoryPostProcessor" />
+
+	<bean id="jade.dataSource.zcars" class="org.apache.commons.dbcp.BasicDataSource"
+		  destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url"
+				  value="${jdbc.zcars.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<!-- 运行判断连接超时任务的时间间隔，单位为毫秒，默认为-1，即不执行任务。 -->
+		<property name="timeBetweenEvictionRunsMillis" value="3600000"/>
+		<!-- 连接的超时时间，默认为半小时。 -->
+		<property name="minEvictableIdleTimeMillis" value="3600000"/>
+	</bean>
+
+	<bean id="jade.dataSource.test" class="org.apache.commons.dbcp.BasicDataSource"
+		  destroy-method="close">
+		<property name="driverClassName" value="${jdbc.driver}"/>
+		<property name="url"
+				  value="${jdbc.test.url}"/>
+		<property name="username" value="${jdbc.username}"/>
+		<property name="password" value="${jdbc.password}"/>
+		<!-- 运行判断连接超时任务的时间间隔，单位为毫秒，默认为-1，即不执行任务。 -->
+		<property name="timeBetweenEvictionRunsMillis" value="3600000"/>
+		<!-- 连接的超时时间，默认为半小时。 -->
+		<property name="minEvictableIdleTimeMillis" value="3600000"/>
+	</bean>
+
+	<bean id="jade.routerInterpreter" class="com.xiaomi.common.service.dal.routing.RewriteSQLInterpreter">
+		<property name="routingConfigurator" ref="jade.routingConfigurator" />
+	</bean>
+	<bean id="jade.routingConfigurator" class="com.xiaomi.common.service.dal.routing.RoutingConfigurator">
+		<property name="partitions">
+			<list>
+				<value>hash:test:id:test_{0}:100</value>
+			</list>
+		</property>
+	</bean>
+</beans>
